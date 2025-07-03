@@ -8,10 +8,34 @@ const Terminal = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
   const processedRedirects = useRef(new Set());
+
+  // check if user is at bottom of terminal
+  const checkIfAtBottom = () => {
+    if (!terminalRef.current) return true;
+    const { scrollTop, scrollHeight, clientHeight } = terminalRef.current;
+    const threshold = 10; // pixels from bottom
+    return scrollTop + clientHeight >= scrollHeight - threshold;
+  };
+
+  // scroll to bottom of terminal
+  const scrollToBottom = () => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  };
+
+  // handle scroll events
+  const handleScroll = () => {
+    const atBottom = checkIfAtBottom();
+    setIsAtBottom(atBottom);
+    setShowScrollIndicator(!atBottom);
+  };
 
   useEffect(() => {
     if (inputRef.current) {
@@ -24,10 +48,19 @@ const Terminal = () => {
   }, []);
 
   useEffect(() => {
-    if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    if (terminalRef.current && isAtBottom) {
+      scrollToBottom();
     }
   }, [history]);
+
+  // add scroll event listener
+  useEffect(() => {
+    const terminal = terminalRef.current;
+    if (terminal) {
+      terminal.addEventListener('scroll', handleScroll);
+      return () => terminal.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
 
   // refocus input when execution finishes
   useEffect(() => {
@@ -273,6 +306,9 @@ const Terminal = () => {
           setCurrentInput(commandHistory[newIndex]);
         }
       }
+    } else if (e.key === 'l' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      scrollToBottom();
     }
   };
 
@@ -344,6 +380,12 @@ const Terminal = () => {
             onKeyDown={handleKeyDown}
             autoFocus
           />
+        </div>
+      )}
+      
+      {showScrollIndicator && (
+        <div className="scroll-indicator" onClick={scrollToBottom}>
+          <span>↓</span>
         </div>
       )}
     </div>
