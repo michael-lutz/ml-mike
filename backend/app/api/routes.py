@@ -81,3 +81,22 @@ async def serve_file(file_path: str):
         raise HTTPException(status_code=404, detail="File not found")
 
     return FileResponse(file_full_path)
+
+
+@router.get("/completion")
+async def get_completions(path: str = "/", prefix: str = ""):
+    """get completion suggestions for files and directories."""
+    try:
+        result = fs_service.list_directory(path)
+        if not result.success:
+            return {"completions": []}
+
+        # parse the ls output to get file/directory names
+        items = result.output.split() if result.output != "directory is empty" else []
+
+        # filter items that start with the prefix
+        completions = [item for item in items if item.startswith(prefix)]
+
+        return {"completions": completions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

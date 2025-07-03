@@ -49,4 +49,17 @@ export class ApiService {
       return false;
     }
   }
+
+  static async getCompletions(path = "/", prefix = "") {
+    try {
+      const response = await fetch(`${API_BASE_URL}/completion?path=${encodeURIComponent(path)}&prefix=${encodeURIComponent(prefix)}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting completions:', error);
+      return { completions: [] };
+    }
+  }
 } 

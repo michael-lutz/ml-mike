@@ -6,6 +6,8 @@ const Terminal = () => {
   const [currentPrompt, setCurrentPrompt] = useState('michael:/$ ');
   const [currentInput, setCurrentInput] = useState('');
   const [isExecuting, setIsExecuting] = useState(false);
+  const [commandHistory, setCommandHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
@@ -56,19 +58,112 @@ const Terminal = () => {
       }
     };
 
+    const handleDocumentKeyDown = (e) => {
+      if (e.key === 'Tab' && !isExecuting) {
+        e.preventDefault();
+        console.log('Document Tab pressed, current input:', currentInput);
+        
+        // handle tab completion asynchronously
+        getTabCompletions(currentInput).then(completions => {
+          console.log('Document completions found:', completions);
+          
+          if (completions.length === 1) {
+            const { command, args } = parseCommand(currentInput);
+            const completion = completions[0];
+            
+            if (args.length === 0) {
+              // completing command
+              setCurrentInput(completion);
+            } else {
+              // completing argument - replace last word
+              const newArgs = [...args.slice(0, -1), completion];
+              setCurrentInput(`${command} ${newArgs.join(' ')}`);
+            }
+          } else if (completions.length > 1) {
+            console.log('Document showing multiple completions:', completions);
+            setHistory(prev => {
+              const last = prev[prev.length - 1];
+              const completionsStr = completions.join('  ');
+              if (last && last.type === 'output' && last.content === completionsStr) {
+                return prev; // Don't add duplicate
+              }
+              return [...prev, {
+                type: 'output',
+                content: completionsStr,
+                success: true
+              }];
+            });
+          }
+        });
+      }
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleWindowFocus);
     document.addEventListener('click', handleDocumentClick);
+    document.addEventListener('keydown', handleDocumentKeyDown);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('click', handleDocumentClick);
+      document.removeEventListener('keydown', handleDocumentKeyDown);
     };
-  }, [isExecuting]);
+  }, [isExecuting, currentInput]);
+
+  const getAvailableCommands = () => {
+    return ['ls', 'cd', 'cat', 'pwd', 'clear', 'open', 'help'];
+  };
+
+  const parseCommand = (input) => {
+    const parts = input.trim().split(/\s+/);
+    return {
+      command: parts[0] || '',
+      args: parts.slice(1),
+      lastWord: parts[parts.length - 1] || ''
+    };
+  };
+
+  const getCurrentPath = () => {
+    // extract current path from prompt (e.g., "michael:/projects$ " -> "/projects")
+    const match = currentPrompt.match(/michael:([^$]+)\$/);
+    return match ? match[1] : '/';
+  };
+
+  const getTabCompletions = async (input) => {
+    if (!input.trim()) return [];
+    
+    const { command, args, lastWord } = parseCommand(input);
+    const commands = getAvailableCommands();
+    
+    // if we're completing the command itself
+    if (args.length === 0) {
+      return commands.filter(cmd => cmd.startsWith(lastWord));
+    }
+    
+    // if we're completing arguments (files/directories)
+    try {
+      const currentPath = getCurrentPath();
+      const result = await ApiService.getCompletions(currentPath, lastWord);
+      return result.completions || [];
+    } catch (error) {
+      console.error('Error getting completions:', error);
+      return [];
+    }
+  };
 
   const executeCommand = async (command) => {
     if (!command.trim() || isExecuting) return;
+
+    // add to command history
+    setCommandHistory(prev => {
+      const newHistory = [...prev];
+      if (command !== newHistory[newHistory.length - 1]) {
+        newHistory.push(command);
+      }
+      return newHistory.slice(-50); // keep last 50 commands
+    });
+    setHistoryIndex(-1);
 
     setIsExecuting(true);
     
@@ -118,6 +213,66 @@ const Terminal = () => {
     if (e.key === 'Enter') {
       e.preventDefault();
       executeCommand(currentInput);
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      console.log('Tab pressed, current input:', currentInput);
+      
+      // handle tab completion asynchronously
+      getTabCompletions(currentInput).then(completions => {
+        console.log('Completions found:', completions);
+        
+        if (completions.length === 1) {
+          // single completion - complete it
+          const { command, args } = parseCommand(currentInput);
+          const completion = completions[0];
+          
+          if (args.length === 0) {
+            // completing command
+            setCurrentInput(completion);
+          } else {
+            // completing argument - replace last word
+            const newArgs = [...args.slice(0, -1), completion];
+            setCurrentInput(`${command} ${newArgs.join(' ')}`);
+          }
+        } else if (completions.length > 1) {
+          // multiple completions - show them
+          console.log('Showing multiple completions:', completions);
+          setHistory(prev => {
+            const last = prev[prev.length - 1];
+            const completionsStr = completions.join('  ');
+            if (last && last.type === 'output' && last.content === completionsStr) {
+              return prev; // Don't add duplicate
+            }
+            return [...prev, {
+              type: 'output',
+              content: completionsStr,
+              success: true
+            }];
+          });
+        }
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      
+      if (commandHistory.length > 0) {
+        const newIndex = historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
+        setHistoryIndex(newIndex);
+        setCurrentInput(commandHistory[newIndex]);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      
+      if (historyIndex !== -1) {
+        const newIndex = historyIndex + 1;
+        if (newIndex >= commandHistory.length) {
+          // reached the end of history, clear input
+          setHistoryIndex(-1);
+          setCurrentInput('');
+        } else {
+          setHistoryIndex(newIndex);
+          setCurrentInput(commandHistory[newIndex]);
+        }
+      }
     }
   };
 
