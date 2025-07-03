@@ -1,4 +1,4 @@
-my name is michael, but most of my friends call me lutz (my last name). i am
+my name is michael, but most of my friends call me lutz (my last name). i'll be
 a quant dev in nyc, and i work on deep learning projects in my free time.
 graduated from berkeley eecs, during which i was a z-fellow and a member of
 machine learning @ berkeley. i previously built an rl robotic training framework

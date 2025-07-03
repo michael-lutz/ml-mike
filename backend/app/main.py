@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .api import router
 
@@ -18,6 +19,9 @@ app.add_middleware(
 
 # include api routes
 app.include_router(router, prefix="/api/v1")
+
+# TODO fix... this is a hack to serve the frontend static files
+app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
 
 
 @app.get("/")
