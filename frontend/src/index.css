@@ -1,0 +1,190 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  background-color: #000;
+  color: #00ff00;
+  overflow: hidden;
+  user-select: none;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+.terminal {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #000;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: text;
+  user-select: none;
+}
+
+.terminal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminal::-webkit-scrollbar-track {
+  background: #000;
+}
+
+.terminal::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 4px;
+}
+
+.terminal-line {
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  position: relative;
+}
+
+.prompt {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.command-text {
+  color: #00ff00;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.command-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  caret-color: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.command-input::placeholder {
+  color: #00ff00;
+  opacity: 0.5;
+}
+
+.output {
+  color: #00ff00;
+  margin: 5px 0;
+}
+
+.error {
+  color: #ff0000;
+}
+
+.success {
+  color: #00ff00;
+}
+
+.link {
+  color: #0080ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: #40a0ff;
+}
+
+/* markdown styles */
+.markdown-content {
+  color: #00ff00;
+  line-height: 1.6;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  color: #00ff00;
+  margin: 10px 0 5px 0;
+}
+
+.markdown-content h1 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #00ff00;
+  padding-bottom: 5px;
+}
+
+.markdown-content h2 {
+  font-size: 1.3em;
+}
+
+.markdown-content p {
+  margin: 5px 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin: 5px 0;
+  padding-left: 20px;
+}
+
+.markdown-content li {
+  margin: 2px 0;
+}
+
+.markdown-content code {
+  background-color: #1a1a1a;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: inherit;
+}
+
+.markdown-content pre {
+  background-color: #1a1a1a;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid #00ff00;
+  margin: 10px 0;
+  padding-left: 10px;
+  color: #80ff80;
+}
+
+/* block cursor animation */
+.cursor {
+  animation: blink 1s infinite;
+  color: #00ff00;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* ensure input is always focused */
+.command-input:focus {
+  outline: none;
+} 
