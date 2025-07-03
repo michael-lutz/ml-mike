@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api import router
 
-app = FastAPI(title="mlmike personal website", description="a command prompt style personal website", version="1.0.0")
+app = FastAPI(title="cmd michael", description="a command prompt style personal website", version="1.0.0")
 
 # add cors middleware for frontend
 app.add_middleware(
@@ -24,7 +24,7 @@ app.include_router(router, prefix="/api/v1")
 async def root():
     """root endpoint."""
     return {
-        "message": "welcome to mlmike's personal website",
+        "message": "welcome to michael lutz's personal website",
         "api_docs": "/docs",
         "description": "this is a command prompt style personal website",
     }

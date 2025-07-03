@@ -3,7 +3,7 @@ import { ApiService } from '../services/api.js';
 
 const Terminal = () => {
   const [history, setHistory] = useState([]);
-  const [currentPrompt, setCurrentPrompt] = useState('mlmike:/$ ');
+  const [currentPrompt, setCurrentPrompt] = useState('michael:/$ ');
   const [currentInput, setCurrentInput] = useState('');
   const [isExecuting, setIsExecuting] = useState(false);
   

@@ -22,7 +22,7 @@ export class ApiService {
         success: false,
         output: '',
         error: `Network error: ${error.message}`,
-        prompt: 'mlmike:/$ '
+        prompt: 'michael:/$ '
       };
     }
   }
@@ -36,7 +36,7 @@ export class ApiService {
       return await response.json();
     } catch (error) {
       console.error('Error getting prompt:', error);
-      return { prompt: 'mlmike:/$ ' };
+      return { prompt: 'michael:/$ ' };
     }
   }
 

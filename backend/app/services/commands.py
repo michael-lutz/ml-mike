@@ -223,4 +223,4 @@ examples:
 
     def get_prompt(self) -> str:
         """get the current command prompt."""
-        return f"mlmike:{self.current_path}$ "
+        return f"michael:{self.current_path}$ "
