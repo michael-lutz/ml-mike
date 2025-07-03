@@ -17,13 +17,18 @@ A command prompt style personal website built with FastAPI and React. Navigate t
 - `cd [directory]` - Change directory
 - `cat <file>` - Display file contents
 - `pwd` - Print working directory
+- `open <file>` - Open files or links (links will redirect to external URLs)
+- `clear` - Clear terminal history
 - `help` - Show help message
 
 ## File Types
 
 - `/` - Directory
-- `@` - Link (will redirect when accessed)
-- (no suffix) - Regular file
+- `.md` - Markdown file
+- `.txt` - Regular file
+- `.html` - HTML file
+- `.jpg/.png/etc` - Image files (use `open` to view)
+- (no suffix) - Linked file
 
 ## Quick Start
 
@@ -92,37 +97,35 @@ The website content is stored in the `backend/content/` directory. The system au
 
 ```
 content/
-├── about.txt          # About page content
+├── about.md           # About page content
 ├── projects/          # Projects directory
-│   └── project1.md    # Project files (markdown)
-└── links/             # External links
-    ├── github         # GitHub profile link
-    └── linkedin       # LinkedIn profile link
+│   ├── README.md      # Projects documentation
+│   └── ksim           # Link to GitHub repository
+└── writing/           # Writing directory
 ```
 
 ### Adding Content
 
 1. **Regular Files**: Create `.txt` or `.md` files in the content directory
 2. **Markdown Files**: Use `.md` extension for rich formatting
-3. **Links**: Create files containing URLs (starting with `http`) in the `links/` directory
+3. **Links**: Create files containing URLs (starting with `http`) - these will redirect when accessed
 4. **Directories**: Create folders to organize your content
 
 ### Example Content Structure
 
 ```
 content/
-├── about.txt
+├── about.md
 ├── resume.md
 ├── blog/
 │   ├── post1.md
 │   └── post2.md
 ├── projects/
-│   ├── project1.md
-│   └── project2.md
-└── links/
-    ├── github
-    ├── linkedin
-    └── twitter
+│   ├── README.md
+│   ├── project1        # Link to GitHub
+│   └── project2        # Link to website
+└── writing/
+    └── article1.md
 ```
 
 ## Development
@@ -198,36 +201,17 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker
 Modify `frontend/src/index.css` to customize the terminal appearance:
 
 - Terminal colors and fonts
-- Markdown content styling
 - Cursor animation
-- Scrollbar appearance
+- Background styling
 
-### Adding New Commands
+### Content
 
-1. Add command logic in `backend/app/services/commands.py`
-2. Update the help text in the `_execute_help` method
-3. Test the new command functionality
+Add your personal content to the `backend/content/` directory:
 
-### Adding HTML Page Support
-
-To support direct HTML pages (future feature):
-
-1. Modify the file system service to detect `.html` files
-2. Update the read_file method to serve HTML content directly
-3. Add HTML file handling in the frontend
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+- Update `about.md` with your information
+- Add projects to the `projects/` directory
+- Create link files for external URLs
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
-
-## Support
-
-If you encounter any issues or have questions, please open an issue on GitHub. 
+MIT License 

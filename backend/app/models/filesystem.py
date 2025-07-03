@@ -12,6 +12,7 @@ class FileType(str, Enum):
     FILE = "file"
     DIRECTORY = "directory"
     LINK = "link"
+    BINARY = "binary"
 
 
 class FileSystemNode(BaseModel):

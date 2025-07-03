@@ -3,6 +3,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from ..services import CommandService, FileSystemService
@@ -58,3 +59,25 @@ async def get_prompt():
 async def health_check():
     """health check endpoint."""
     return {"status": "healthy", "message": "mlmike personal website api is running"}
+
+
+@router.get("/files/{file_path:path}")
+async def serve_file(file_path: str):
+    """serve binary files from the content directory."""
+    import os
+    from pathlib import Path
+
+    # construct the full path to the file
+    content_dir = Path("content")
+    file_full_path = content_dir / file_path
+
+    # security check: ensure the file is within the content directory
+    try:
+        file_full_path.resolve().relative_to(content_dir.resolve())
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if not file_full_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(file_full_path)

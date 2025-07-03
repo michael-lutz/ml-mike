@@ -9,6 +9,7 @@ const Terminal = () => {
   
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
+  const processedRedirects = useRef(new Set());
 
   useEffect(() => {
     if (inputRef.current) {
@@ -130,7 +131,12 @@ const Terminal = () => {
       );
     } else if (entry.type === 'output') {
       if (entry.redirect) {
-        window.open(entry.redirect, '_blank');
+        // only process redirect once per entry
+        const redirectKey = `${index}-${entry.redirect}`;
+        if (!processedRedirects.current.has(redirectKey)) {
+          processedRedirects.current.add(redirectKey);
+          window.open(entry.redirect, '_blank');
+        }
         return (
           <div key={index} className="terminal-line">
             <span className="output link">redirecting to: {entry.redirect}</span>

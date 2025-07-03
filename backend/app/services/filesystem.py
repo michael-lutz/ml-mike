@@ -88,13 +88,23 @@ this is a cool project i built. it does amazing things.
             )
 
             if item.is_file():
-                # check if it's a link file
-                content = item.read_text().strip()
-                if content.startswith("http"):
-                    node.type = FileType.LINK
-                    node.target = content
+                # check if it's a binary file (image, etc.)
+                if self._is_binary_file(item):
+                    node.type = FileType.BINARY
+                    node.content = None
                 else:
-                    node.content = content
+                    # check if it's a link file
+                    try:
+                        content = item.read_text().strip()
+                        if content.startswith("http"):
+                            node.type = FileType.LINK
+                            node.target = content
+                        else:
+                            node.content = content
+                    except UnicodeDecodeError:
+                        # if we can't decode as text, treat as binary
+                        node.type = FileType.BINARY
+                        node.content = None
 
             if item.is_dir():
                 self._load_directory(item, node)
@@ -144,8 +154,6 @@ this is a cool project i built. it does amazing things.
             for child in node.children:
                 if child.type == FileType.DIRECTORY:
                     items.append(f"{child.name}/")
-                elif child.type == FileType.LINK:
-                    items.append(f"{child.name}@")
                 else:
                     items.append(child.name)
 
@@ -166,15 +174,68 @@ this is a cool project i built. it does amazing things.
         if node.type == FileType.DIRECTORY:
             return CommandResult(success=False, output="", error=f"is a directory: {path}")
 
+        if node.type == FileType.BINARY:
+            return CommandResult(success=False, output="", error=f"binary file: {path} (use 'open' to view)")
+
         if not node.content:
             return CommandResult(success=False, output="", error=f"file is empty: {path}")
 
         # convert markdown to html if it's a markdown file
         if path.endswith(".md"):
-            html_content = markdown.markdown(node.content)
+            # convert relative image paths to absolute URLs
+            import re
+
+            content = node.content
+
+            # replace relative image paths with absolute URLs
+            def replace_image_path(match):
+                alt_text = match.group(1)  # text inside square brackets
+                img_path = match.group(2)  # path inside parentheses
+                if img_path.startswith("./"):
+                    img_path = img_path[2:]  # remove ./
+                elif img_path.startswith("/"):
+                    img_path = img_path[1:]  # remove leading /
+
+                # construct the full URL
+                return f'<img src="/api/v1/files/{img_path}" alt="{alt_text}" style="max-width: 100%; height: auto;">'
+
+            # replace markdown image syntax with HTML img tags
+            content = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", replace_image_path, content)
+
+            # convert the rest to HTML
+            html_content = markdown.markdown(content)
             return CommandResult(success=True, output=html_content)
 
         return CommandResult(success=True, output=node.content)
+
+    def _is_binary_file(self, file_path: Path) -> bool:
+        """check if a file is binary based on its extension."""
+        binary_extensions = {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".bmp",
+            ".tiff",
+            ".webp",
+            ".pdf",
+            ".zip",
+            ".tar",
+            ".gz",
+            ".rar",
+            ".7z",
+            ".mp3",
+            ".mp4",
+            ".avi",
+            ".mov",
+            ".wav",
+            ".flac",
+            ".exe",
+            ".dll",
+            ".so",
+            ".dylib",
+        }
+        return file_path.suffix.lower() in binary_extensions
 
     def get_current_path(self, path: str) -> str:
         """get the current working directory path."""

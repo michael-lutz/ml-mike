@@ -191,6 +191,11 @@ class CommandService:
         if node.type == FileType.LINK:
             return CommandResult(success=True, output="", redirect=node.target)
 
+        if node.type == FileType.BINARY:
+            # create a URL to the file serving endpoint
+            file_url = f"/api/v1/files/{file_path.lstrip('/')}"
+            return CommandResult(success=True, output="", redirect=file_url)
+
         # for regular files, just read them like cat
         return self.fs_service.read_file(file_path)
 
@@ -208,14 +213,17 @@ help               - show this help message
 
 file types:
   /                - directory
-  @                - link (will redirect when accessed)
-  (no suffix)      - regular file
+  .md              - markdown file (view with cat)
+  .txt             - regular file (view with cat)
+  .html            - html file (view with open)
+  .jpg/.png/etc    - image file (view with open)
+  (no suffix)      - linked file (view with open)
 
 examples:
   ls               - list current directory
   cd projects      - enter projects directory
-  cat about.txt    - view about file
-  open github      - open github link
+  cat about.md     - view about file
+  open ksim        - open ksim project link
   clear            - clear terminal
   pwd              - show current path
 """
