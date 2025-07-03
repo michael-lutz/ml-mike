@@ -41,7 +41,9 @@ class CommandService:
         elif cmd == "help":
             return self._execute_help(args)
         else:
-            return CommandResult(success=False, output="", error=f"command not found: {cmd}")
+            return CommandResult(
+                success=False, output="", error=f"command not found: {cmd}. Try 'help' for a list of commands."
+            )
 
     def _parse_command(self, command: str) -> List[str]:
         """parse command string into parts, handling quotes."""

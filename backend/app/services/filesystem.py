@@ -149,9 +149,27 @@ this is a cool project i built. it does amazing things.
         if not node.children:
             output = "directory is empty"
         else:
+            # sort items by extension type, then alphabetically
+            def get_sort_key(child):
+                if child.type == FileType.DIRECTORY:
+                    # directories come first, sorted alphabetically
+                    return (0, child.name.lower())
+                else:
+                    # files are sorted by extension, then alphabetically
+                    name = child.name
+                    if "." in name:
+                        # has extension
+                        base, ext = name.rsplit(".", 1)
+                        return (1, ext.lower(), base.lower())
+                    else:
+                        # no extension (like link files)
+                        return (1, "", name.lower())
+
+            sorted_children = sorted(node.children, key=get_sort_key)
+
             # format output like ls
             items = []
-            for child in node.children:
+            for child in sorted_children:
                 if child.type == FileType.DIRECTORY:
                     items.append(f"{child.name}/")
                 else:
