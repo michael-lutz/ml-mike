@@ -149,9 +149,20 @@ this is a cool project i built. it does amazing things.
         if not node.children:
             output = "directory is empty"
         else:
+            # sort children: directories first, then .md files, then other files
+            def sort_key(child):
+                if child.type == FileType.DIRECTORY:
+                    return (0, child.name.lower())  # directories first
+                elif child.name.endswith('.md'):
+                    return (1, child.name.lower())  # .md files second
+                else:
+                    return (2, child.name.lower())  # other files last
+            
+            sorted_children = sorted(node.children, key=sort_key)
+            
             # format output like ls
             items = []
-            for child in node.children:
+            for child in sorted_children:
                 if child.type == FileType.DIRECTORY:
                     items.append(f"{child.name}/")
                 else:
