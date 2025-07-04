@@ -2,6 +2,8 @@
 
 A command prompt style personal website built with FastAPI and React. Navigate through the site using familiar terminal commands like `ls`, `cd`, and `cat`.
 
+See it live at [ml-mike.com](https://www.ml-mike.com).
+
 ## Features
 
 - **Command Prompt Interface**: Navigate using real terminal commands
@@ -40,12 +42,13 @@ git clone <your-repo-url>
 cd mlmike
 ```
 
-2. Start the services:
+2. Build and run the Docker image:
 ```bash
-docker-compose up --build
+docker build -t mlmike .
+docker run -p 8080:8080 mlmike
 ```
 
-3. Open your browser and navigate to `http://localhost:3000`
+3. Open your browser and navigate to `http://localhost:8080`
 
 ### Manual Setup
 
@@ -128,9 +131,41 @@ content/
     └── article1.md
 ```
 
-## Development
+## Docker Setup
 
-### Backend Development
+The project includes a multi-stage Dockerfile that:
+
+1. **Builds the frontend** - Uses Node.js to build the React application
+2. **Builds the backend** - Installs Python dependencies and prepares the backend
+3. **Creates the final image** - Combines both frontend and backend into a single container
+
+The backend serves the frontend static files using FastAPI's StaticFiles middleware, making it a single-container deployment.
+
+### Docker Commands
+
+```bash
+# Build the image
+docker build -t mlmike .
+
+# Run the container
+docker run -p 8080:8080 mlmike
+
+# Run in detached mode
+docker run -d -p 8080:8080 --name mlmike-app mlmike
+
+# Run with content directory mounted (for development)
+docker run -p 8080:8080 -v $(pwd)/backend/content:/app/backend/content mlmike
+
+# Stop the container
+docker stop mlmike-app
+
+# Remove the container
+docker rm mlmike-app
+```
+
+**Note**: To persist content changes, mount the content directory when running the container: `-v $(pwd)/backend/content:/app/backend/content`
+
+## Development
 
 The backend is built with FastAPI and provides:
 
@@ -170,12 +205,23 @@ Key files:
 
 ### Docker Deployment
 
-1. Build and run with Docker Compose:
+1. Build and run with Docker:
 ```bash
-docker-compose up --build -d
+docker build -t mlmike .
+docker run -d -p 8080:8080 --name mlmike-app mlmike
 ```
 
-2. Access the application at `http://localhost:3000`
+2. Access the application at `http://localhost:8080`
+
+### Docker Compose (Alternative)
+
+If you prefer using Docker Compose for development with separate frontend and backend services:
+
+```bash
+docker-compose up --build
+```
+
+This will run the frontend on `http://localhost:3000` and backend on `http://localhost:8000`.
 
 ### Manual Deployment
 
