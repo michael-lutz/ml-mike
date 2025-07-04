@@ -122,6 +122,10 @@ class CommandService:
         if not node:
             return CommandResult(success=False, output="", error=f"cd: no such directory: {target}")
 
+        # if it's a link, redirect instead of changing directory
+        if node.type == FileType.LINK:
+            return CommandResult(success=True, output="", redirect=node.target)
+
         if node.type.value != "directory":
             return CommandResult(success=False, output="", error=f"cd: not a directory: {target}")
 

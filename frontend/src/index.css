@@ -8,15 +8,19 @@ body {
   font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
   background-color: #000;
   color: #00ff00;
-  overflow: hidden;
   user-select: none;
+  /* Allow scrolling on mobile */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #root {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Ensure proper height on mobile */
+  height: 100%;
 }
 
 
@@ -33,6 +37,12 @@ body {
   cursor: text;
   user-select: none;
   scroll-behavior: smooth;
+  /* Ensure proper height calculation */
+  min-height: calc(100vh - 40px);
+  /* Enable momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Ensure scrolling works on mobile */
+  overscroll-behavior: contain;
 }
 
 .terminal::-webkit-scrollbar {
@@ -207,6 +217,9 @@ body {
   transition: all 0.3s ease;
   z-index: 1000;
   backdrop-filter: blur(5px);
+  /* Ensure touch targets are accessible */
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .scroll-indicator:hover {
@@ -218,4 +231,32 @@ body {
   color: #00ff00;
   font-size: 18px;
   font-weight: bold;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  .terminal {
+    padding: 10px;
+    font-size: 12px;
+    /* Ensure proper viewport height on mobile */
+    min-height: calc(100vh - 20px);
+  }
+  
+  .scroll-indicator {
+    bottom: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+  }
+  
+  .scroll-indicator span {
+    font-size: 16px;
+  }
+}
+
+/* Prevent zoom on iOS when focusing input */
+@media (max-width: 768px) {
+  .command-input {
+    font-size: 16px;
+  }
 } 

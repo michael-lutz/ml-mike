@@ -19,7 +19,8 @@ const Terminal = () => {
   const checkIfAtBottom = () => {
     if (!terminalRef.current) return true;
     const { scrollTop, scrollHeight, clientHeight } = terminalRef.current;
-    const threshold = 10; // pixels from bottom
+    // Account for input prompt line height (~20px) plus some buffer
+    const threshold = 50; // pixels from bottom to account for input prompt
     return scrollTop + clientHeight >= scrollHeight - threshold;
   };
 
@@ -37,6 +38,21 @@ const Terminal = () => {
     setShowScrollIndicator(!atBottom);
   };
 
+  // handle touch events for mobile scrolling
+  const handleTouchStart = (e) => {
+    // Allow touch scrolling on mobile
+    if (inputRef.current && !isExecuting) {
+      // Don't prevent default - allow scrolling
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    // Allow touch scrolling on mobile
+    if (inputRef.current && !isExecuting) {
+      // Don't prevent default - allow scrolling
+    }
+  };
+
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -48,24 +64,40 @@ const Terminal = () => {
   }, []);
 
   useEffect(() => {
-    if (terminalRef.current && isAtBottom) {
-      scrollToBottom();
+    // Only auto-scroll when history changes during execution
+    // This prevents scrolling when user is manually browsing history
+    if (isExecuting) {
+      const timeoutId = setTimeout(() => {
+        scrollToBottom();
+        setIsAtBottom(true);
+      }, 50);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [history]);
+  }, [history, isExecuting]);
 
-  // add scroll event listener
+  // add scroll and touch event listeners
   useEffect(() => {
     const terminal = terminalRef.current;
     if (terminal) {
       terminal.addEventListener('scroll', handleScroll);
-      return () => terminal.removeEventListener('scroll', handleScroll);
+      terminal.addEventListener('touchstart', handleTouchStart, { passive: true });
+      terminal.addEventListener('touchmove', handleTouchMove, { passive: true });
+      
+      return () => {
+        terminal.removeEventListener('scroll', handleScroll);
+        terminal.removeEventListener('touchstart', handleTouchStart);
+        terminal.removeEventListener('touchmove', handleTouchMove);
+      };
     }
   }, []);
 
-  // refocus input when execution finishes
+  // refocus input and scroll when execution finishes
   useEffect(() => {
     if (!isExecuting && inputRef.current) {
       inputRef.current.focus();
+      // Scroll to bottom after execution completes and input is rendered
+      setTimeout(() => scrollToBottom(), 100);
     }
   }, [isExecuting]);
 
@@ -85,8 +117,11 @@ const Terminal = () => {
       }
     };
 
-    const handleDocumentClick = () => {
-      if (!isExecuting && inputRef.current) {
+    const handleDocumentClick = (e) => {
+      // Don't focus on scroll indicator clicks or if user is selecting text
+      if (!isExecuting && inputRef.current && 
+          !e.target.closest('.scroll-indicator') && 
+          !window.getSelection().toString()) {
         inputRef.current.focus();
       }
     };
@@ -206,6 +241,8 @@ const Terminal = () => {
       prompt: currentPrompt,
       content: command
     }]);
+
+    // Don't scroll here - wait until execution is complete
     
           try {
         const result = await ApiService.executeCommand(command);
@@ -229,6 +266,8 @@ const Terminal = () => {
         
         setCurrentPrompt(result.prompt);
         setCurrentInput('');
+
+        // Don't scroll here - wait until execution is complete and input is rendered
         
       } catch (error) {
       setHistory(prev => [...prev, {
@@ -237,6 +276,8 @@ const Terminal = () => {
         error: `Error: ${error.message}`,
         success: false
       }]);
+      
+      // Don't scroll here - wait until execution is complete and input is rendered
     } finally {
       setIsExecuting(false);
     }
